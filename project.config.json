@@ -1,0 +1,17 @@
+{
+	"description": "A WePY project",
+	"setting": {
+		"urlCheck": true,
+		"es6": false,
+		"postcss": false,
+		"minified": false,
+		"newFeature": true,
+		"autoAudits": false,
+		"nodeModules": true
+	},
+	"compileType": "miniprogram",
+	"appid": "wx13ec5bbed1727d3a",
+	"projectname": "ol",
+	"miniprogramRoot": "dist/",
+	"condition": {}
+}

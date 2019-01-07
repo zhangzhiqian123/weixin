@@ -1,0 +1,149 @@
+<style lang="less">
+   @import "../styles/custom/qr.less";
+</style>
+  
+<template>
+  <view class="_home">
+    <view class="bc_recommend">
+        <view class="title font_32">
+          推荐课程
+          <span class="flo_r font_26">
+            全部课程
+            <image src="../images/icon/more.png" mode="aspectFit" style="width: 22rpx;height: 22rpx;margin-left: -6rpx;">
+          </span>
+        </view>
+  </view>
+  <view class="pro-container">
+  <scroll-view class="left-menu" scroll-y scroll-with-animation="true" scroll-top="{{leftMenuTop}}">
+    <view class="menu-item {{index===currentActiveIndex?'menu-active':''}}" wx:for="{{proList}}" wx:key="{{item.index}}" id="{{index}}" catchtap='changeMenu' >{{item.opt_name}}</view>
+  </scroll-view>
+  <scroll-view class="right-pro" bindscroll = "scroll" scroll-y scroll-with-animation="true" scroll-top="{{rightProTop}}">
+    <view class="pro-item" wx:for="{{proList}}" wx:key="{{index}}">
+       <view class="item-header">{{item.opt_name}}</view>
+        <view class="pro-item-container">
+           <view wx:for="{{item.children}}" wx:key="{{index}}" class="pro-item-item"> 
+            <image lazy-load="true" src="{{item.image_url}}">
+            <text>{{item.opt_name}}</text>
+          </view>
+        </view>
+    </view>
+  </scroll-view>
+</view>
+</view>
+</template>
+<script>
+let proListToTop = [], menuToTop = [], MENU = 0, windowHeight,timeoutId;
+// MENU ==> 是否为点击左侧进行滚动的，如果是，则不需要再次设置左侧的激活状态
+Page({
+  data: {
+    proList: [],
+    currentActiveIndex: 0
+  },
+  onLoad: function (options) {
+    const { proList } = require('./proList.js')
+    this.setData({
+      proList: proList
+    })
+    // 确保页面数据已经刷新完毕~
+    setTimeout(() => {
+      this.getAllRects()
+    }, 20)
+  },
+  changeMenu(e) {
+    // 改变左侧tab栏操作
+    if (Number(e.target.id) === this.data.currentActiveIndex) return
+    MENU = 1
+    this.setData({
+      currentActiveIndex: Number(e.target.id),
+      rightProTop: proListToTop[Number(e.target.id)]
+    })
+    this.setMenuAnimation(Number(e.target.id))
+  },
+  scroll(e) {
+    for (let i = 0; i < proListToTop.length; i++) {
+      if (e.detail.scrollTop < proListToTop[i] && i !== 0 && e.detail.scrollTop > proListToTop[i - 1]) {
+        return this.setDis(i)
+      }
+    }
+    // 找不到匹配项，默认显示第一个数据
+    if (!MENU) {
+      this.setData({
+        currentActiveIndex: 0
+      })
+    }
+    MENU = 0
+  },
+  setDis(i) {
+    // 设置左侧menu栏的选中状态
+    if (i !== this.data.currentActiveIndex + 1 && !MENU) {
+      this.setData({
+        currentActiveIndex: i - 1
+      })
+    }
+    MENU = 0
+    this.setMenuAnimation(i)
+  },
+  setMenuAnimation(i){
+    // 设置动画，使menu滚动到指定位置。
+    let self = this
+    
+    if (menuToTop[i].animate) {
+      console.log(11111)
+      // 节流操作
+      if(timeoutId){
+        clearTimeout(timeoutId)
+      }
+      timeoutId = setTimeout(()=>{
+        console.log(12138)
+        self.setData({
+          leftMenuTop: (menuToTop[i].top - windowHeight)
+        })
+      },50)
+    } else {
+      if (this.data.leftMenuTop === 0) return
+      this.setData({
+        leftMenuTop: 0
+      })
+    }
+  },
+  getActiveReacts(){
+    wx.createSelectorQuery().selectAll('.menu-active').boundingClientRect(function (rects) {
+      return rects[0].top
+    }).exec()
+  },
+  getAllRects() {
+
+    // 获取商品数组的位置信息
+    wx.createSelectorQuery().selectAll('.pro-item').boundingClientRect(function (rects) {
+      rects.forEach(function (rect) {
+        proListToTop.push(rect.top)
+      })
+    }).exec()
+
+    // 获取menu数组的位置信息
+    wx.createSelectorQuery().selectAll('.menu-item').boundingClientRect(function (rects) {
+      wx.getSystemInfo({
+        success: function (res) {
+          windowHeight = res.windowHeight / 2
+          rects.forEach(function (rect) {
+            menuToTop.push({
+              top: rect.top,
+              animate:rect.top > windowHeight
+              })
+          })
+        }
+      })
+    }).exec()
+  },
+  // 获取系统的高度信息
+  getSystemInfo() {
+    let self = this
+    wx.getSystemInfo({
+      success: function (res) {
+        windowHeight = res.windowHeight / 2
+      }
+    })
+  }
+})
+</script>
+

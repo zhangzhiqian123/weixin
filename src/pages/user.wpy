@@ -1,0 +1,13 @@
+<style lang="less">
+   @import "../styles/custom/qr.less";
+</style>
+<template>
+  <view class="page-user">
+    <view class="_user">
+       <view class="title font_32">
+    
+    巴扎黑！
+    </view>
+  </view>
+  </view>
+</template>
